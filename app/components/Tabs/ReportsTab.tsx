@@ -91,7 +91,7 @@ export default function ReportsTab({
 
         <button
           onClick={() => exportItemsToCSV(items)}
-          className="flex items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 py-2.5 text-[11px] font-semibold text-ink shadow-xs hover:bg-canvas transition"
+          className="flex items-center gap-1.5 rounded-2xl border border-line bg-white px-4 py-2.5 text-[12px] font-bold text-ink shadow-soft hover:bg-canvas hover:border-brand/40 transition"
         >
           <Download size={14} /> Export Full Inventory Data
         </button>

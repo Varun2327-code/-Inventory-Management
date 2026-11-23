@@ -390,23 +390,23 @@ export default function StockPilotHome() {
 
   return (
     <div className="min-h-screen bg-canvas text-ink flex">
-      {/* Sidebar Navigation */}
+      {/* Sidebar Navigation matching luxury purple/indigo visual style */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[256px] flex-col border-r border-line bg-white transition-transform lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col border-r border-line bg-white transition-transform lg:translate-x-0 ${
           mobileNav ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-[76px] items-center justify-between border-b border-line px-6">
+        <div className="flex h-[80px] items-center justify-between border-b border-line px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white shadow-sm">
-              <Boxes size={20} />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#6366f1] via-[#7c3aed] to-[#4338ca] text-white shadow-purple">
+              <Sparkles size={20} />
             </div>
             <div>
-              <div className="text-[17px] font-extrabold tracking-tight">
+              <div className="text-[18px] font-black tracking-tight text-[#0f172a]">
                 stock<span className="text-brand">pilot</span>
               </div>
-              <div className="text-[10px] font-semibold uppercase tracking-[.18em] text-muted">
-                INVENTORY PRO
+              <div className="text-[10px] font-bold uppercase tracking-[.2em] text-[#7c3aed]">
+                FINANCIAL & STOCK
               </div>
             </div>
           </div>
@@ -419,8 +419,8 @@ export default function StockPilotHome() {
         </div>
 
         {/* Navigation list */}
-        <div className="px-4 pt-6 space-y-1">
-          <div className="mb-2.5 px-3 text-[10px] font-bold tracking-[.18em] text-[#9aa69f] uppercase">
+        <div className="px-4 pt-6 space-y-1.5">
+          <div className="mb-3 px-3 text-[10px] font-extrabold tracking-[.2em] text-muted uppercase">
             Workspace
           </div>
           {navigationItems.map((n) => {
@@ -433,20 +433,22 @@ export default function StockPilotHome() {
                   setTab(n.name);
                   setMobileNav(false);
                 }}
-                className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13px] font-semibold transition ${
+                className={`flex w-full items-center gap-3.5 rounded-2xl px-4 py-3 text-[13px] font-bold transition duration-150 cursor-pointer ${
                   isActive
-                    ? "bg-[#eaf4ee] text-brand shadow-xs"
-                    : "text-[#65736b] hover:bg-[#f6f8f6] hover:text-ink"
+                    ? "bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#4f46e5] text-white shadow-purple"
+                    : "text-[#64748b] hover:bg-[#f4f6fe] hover:text-[#0f172a]"
                 }`}
               >
-                <Icon size={18} className={isActive ? "text-brand" : "text-[#7b8a82]"} />
+                <Icon size={19} className={isActive ? "text-white" : "text-[#7c3aed]/80"} strokeWidth={isActive ? 2.2 : 1.8} />
                 <span>{n.name}</span>
                 {n.badge !== undefined && (
                   <span
-                    className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                      n.name === "Stock"
-                        ? "bg-[#fff0df] text-[#b86c21]"
-                        : "bg-[#edf4ff] text-[#2964bd]"
+                    className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : n.name === "Stock"
+                        ? "bg-amber-100 text-amber-800"
+                        : "bg-indigo-100 text-indigo-700"
                     }`}
                   >
                     {n.badge}
@@ -459,26 +461,26 @@ export default function StockPilotHome() {
 
         {/* Bottom Workspace & Settings */}
         <div className="mt-auto p-4 space-y-3">
-          <div className="rounded-2xl border border-line bg-[#f5f8f5] p-3.5">
-            <div className="flex items-center gap-2 text-[12px] font-bold text-ink">
+          <div className="rounded-[22px] border border-line bg-[#f8f9fe] p-4">
+            <div className="flex items-center gap-2 text-[12px] font-extrabold text-[#0f172a]">
               <Sparkles size={15} className="text-brand" />
               <span>{settings.companyName}</span>
             </div>
-            <p className="mt-1 text-[11px] leading-relaxed text-muted">
-              {items.length} products tracked · Real-time auto-sync enabled.
+            <p className="mt-1 text-[11px] leading-relaxed text-muted font-medium">
+              {items.length} products tracked · Auto-sync enabled.
             </p>
           </div>
 
           <button
             onClick={() => setShowSettingsModal(true)}
-            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13px] font-semibold text-[#65736b] hover:bg-[#f6f8f6] hover:text-ink transition"
+            className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-[13px] font-bold text-[#64748b] hover:bg-[#f4f6fe] hover:text-[#0f172a] transition cursor-pointer"
           >
             <Settings2 size={18} />
             <span>Workspace Settings</span>
           </button>
 
           <div className="flex items-center gap-3 border-t border-line px-2 pt-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand/10 text-[12px] font-bold text-brand">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white text-[12px] font-bold ring-2 ring-purple-100 shadow-xs">
               {settings.ownerName
                 .split(" ")
                 .map((n) => n[0])
@@ -487,8 +489,8 @@ export default function StockPilotHome() {
                 .toUpperCase() || "JD"}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[12px] font-bold text-ink">{settings.ownerName}</div>
-              <div className="text-[10px] text-muted">Admin Manager</div>
+              <div className="truncate text-[12px] font-extrabold text-[#0f172a]">{settings.ownerName}</div>
+              <div className="text-[10px] text-muted font-medium">Workspace Owner</div>
             </div>
           </div>
         </div>
@@ -503,7 +505,7 @@ export default function StockPilotHome() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 min-h-screen flex flex-col lg:pl-[256px]">
+      <div className="flex-1 min-h-screen flex flex-col lg:pl-[260px]">
         {/* Sticky Top Header */}
         <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-line bg-white/95 px-5 backdrop-blur md:px-8">
           <div className="flex items-center gap-3">
@@ -514,11 +516,11 @@ export default function StockPilotHome() {
               <Menu size={20} />
             </button>
             <div>
-              <div className="text-[11px] font-medium text-muted">
+              <div className="text-[11px] font-semibold text-muted">
                 {settings.companyName} <span className="mx-1">/</span>
-                <span className="text-ink font-semibold">{tab}</span>
+                <span className="text-brand font-bold">{tab}</span>
               </div>
-              <div className="text-lg font-bold text-ink">
+              <div className="text-lg font-black tracking-tight text-[#0f172a]">
                 {tab === "Overview"
                   ? `Welcome, ${settings.ownerName}`
                   : tab === "Stock"
@@ -543,7 +545,7 @@ export default function StockPilotHome() {
                 else if (tab === "Purchases") setShowPurchaseModal(true);
                 else setShowItemModal(true);
               }}
-              className="group hidden sm:inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-[#176147] px-3.5 py-2 text-[12px] font-bold text-white shadow-[0_2px_8px_rgba(22,101,74,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-emerald-500 hover:to-emerald-700 hover:shadow-[0_4px_14px_rgba(22,101,74,0.35)] active:scale-[0.98] transition-all cursor-pointer"
+              className="group hidden sm:inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#4f46e5] px-4 py-2.5 text-[12px] font-bold text-white shadow-purple hover:shadow-[0_20px_45px_-5px_rgba(99,102,241,0.5)] active:scale-[0.98] transition-all cursor-pointer"
             >
               <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-white/20 text-white shadow-xs group-hover:scale-110 transition-transform">
                 <Plus size={13} strokeWidth={2.5} />
@@ -566,7 +568,7 @@ export default function StockPilotHome() {
                   toast("All clear! No pending inventory warnings.");
                 }
               }}
-              className="relative rounded-xl border border-line bg-white p-2.5 text-muted hover:bg-canvas hover:text-ink transition"
+              className="relative rounded-2xl border border-line bg-white p-2.5 text-muted hover:bg-canvas hover:text-ink transition shadow-xs"
             >
               <Bell size={17} />
               {lowItems.length > 0 && (

@@ -74,13 +74,13 @@ export default function PurchasesTab({
         <div className="flex items-center gap-2">
           <button
             onClick={() => exportPurchasesToCSV(purchases)}
-            className="flex items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 py-2.5 text-[11px] font-semibold text-ink shadow-xs hover:bg-canvas transition"
+            className="flex items-center gap-1.5 rounded-2xl border border-line bg-white px-4 py-2.5 text-[12px] font-bold text-ink shadow-soft hover:bg-canvas hover:border-brand/40 transition"
           >
             <Download size={14} /> Export POs CSV
           </button>
           <button
             onClick={onNewPurchase}
-            className="flex items-center gap-1.5 rounded-xl bg-brand px-4 py-2.5 text-[11px] font-semibold text-white shadow-sm hover:bg-[#185940] transition"
+            className="flex items-center gap-1.5 rounded-2xl bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#4f46e5] px-4.5 py-2.5 text-[12px] font-bold text-white shadow-purple hover:shadow-[0_20px_45px_-5px_rgba(99,102,241,0.5)] active:scale-[0.98] transition-all cursor-pointer"
           >
             <Plus size={15} /> New Purchase Order
           </button>
