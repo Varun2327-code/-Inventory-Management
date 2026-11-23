@@ -4,82 +4,90 @@ import React from "react";
 import { CalendarCheck, FileText, CalendarX, HelpCircle, LucideIcon } from "lucide-react";
 import MiniProgressCircle from "./MiniProgressCircle";
 
-interface BillCardItem {
-  id: string;
-  label: string;
-  value: string;
-  progressValue: number;
-  progressLabel: string;
-  progressColor?: string;
-  description: string;
-  icon: LucideIcon;
-  iconBg: string;
-  iconColor: string;
-  accentColor: string;
+export interface BillsSectionProps {
+  totalUnits?: number;
+  activeSkus?: number;
+  salesCount?: number;
+  salesRevenue?: string;
+  lowStockCount?: number;
+  pendingPurchasesCount?: number;
+  pendingPurchasesAmount?: string;
 }
 
-const BILLS_CARDS: BillCardItem[] = [
-  {
-    id: "card-1",
-    label: "Ready to assign",
-    value: "200 - 42",
-    progressValue: 32,
-    progressLabel: "+32%",
-    progressColor: "#6835f1",
-    description: "Bills in this week 221",
-    icon: CalendarCheck,
-    iconBg: "#f3f5fd",
-    iconColor: "#1d173c",
-    accentColor: "#6835f1",
-  },
-  {
-    id: "card-2",
-    label: "Pending sign offs",
-    value: "63 - 17",
-    progressValue: 22,
-    progressLabel: "+22%",
-    progressColor: "#7c3aed",
-    description: "Signed off in this week 221",
-    icon: FileText,
-    iconBg: "#f3f5fd",
-    iconColor: "#1d173c",
-    accentColor: "#7c3aed",
-  },
-  {
-    id: "card-3",
-    label: "Declined",
-    value: "5",
-    progressValue: -5,
-    progressLabel: "-5%",
-    progressColor: "#f43f5e",
-    description: "Declined this week 2",
-    icon: CalendarX,
-    iconBg: "#fff3f5",
-    iconColor: "#f43f5e",
-    accentColor: "#f43f5e",
-  },
-  {
-    id: "card-4",
-    label: "RFI",
-    value: "13 - 17",
-    progressValue: 5,
-    progressLabel: "+5%",
-    progressColor: "#0ea5e9",
-    description: "Requested this week 2",
-    icon: HelpCircle,
-    iconBg: "#f0f9ff",
-    iconColor: "#0ea5e9",
-    accentColor: "#0ea5e9",
-  },
-];
+export default function BillsSection({
+  totalUnits = 412,
+  activeSkus = 8,
+  salesCount = 4,
+  salesRevenue = "$3,764.00",
+  lowStockCount = 1,
+  pendingPurchasesCount = 2,
+  pendingPurchasesAmount = "$1,240.00",
+}: BillsSectionProps) {
+  const cards = [
+    {
+      id: "card-1",
+      label: "Ready to fulfill",
+      value: `${totalUnits} Units`,
+      subValue: `${activeSkus} SKUs active`,
+      progressValue: 32,
+      progressLabel: "+32%",
+      progressColor: "#6835f1",
+      description: "Inventory stock on warehouse floor",
+      icon: CalendarCheck,
+      iconBg: "#f3f5fd",
+      iconColor: "#1d173c",
+      accentColor: "#6835f1",
+    },
+    {
+      id: "card-2",
+      label: "Pending sign offs",
+      value: `${salesCount} Invoices`,
+      subValue: salesRevenue,
+      progressValue: 22,
+      progressLabel: "+22%",
+      progressColor: "#7c3aed",
+      description: "Sales orders in fulfillment pipeline",
+      icon: FileText,
+      iconBg: "#f3f5fd",
+      iconColor: "#1d173c",
+      accentColor: "#7c3aed",
+    },
+    {
+      id: "card-3",
+      label: "Low Stock Alert",
+      value: `${lowStockCount} Items`,
+      subValue: "Below min buffer",
+      progressValue: lowStockCount > 0 ? -Math.min(100, lowStockCount * 10) : 0,
+      progressLabel: lowStockCount > 0 ? `-${lowStockCount * 5}%` : "0%",
+      progressColor: "#f43f5e",
+      description: "SKUs requiring immediate restocking",
+      icon: CalendarX,
+      iconBg: "#fff3f5",
+      iconColor: "#f43f5e",
+      accentColor: "#f43f5e",
+    },
+    {
+      id: "card-4",
+      label: "Pending PO Deliveries",
+      value: `${pendingPurchasesCount} Shipments`,
+      subValue: pendingPurchasesAmount,
+      progressValue: 15,
+      progressLabel: "+15%",
+      progressColor: "#0ea5e9",
+      description: "Vendor restocks in transit to godown",
+      icon: HelpCircle,
+      iconBg: "#f0f9ff",
+      iconColor: "#0ea5e9",
+      accentColor: "#0ea5e9",
+    },
+  ];
 
-export default function BillsSection() {
   return (
     <div>
-      <h2 className="mb-4 text-xl font-black tracking-tight text-[#141031]">Bills</h2>
+      <h2 className="mb-4 text-xl font-black tracking-tight text-[#141031]">Bills & Inventory Pulse</h2>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {BILLS_CARDS.map((card) => {
+        {cards.map((card) => {
           const Icon = card.icon;
 
           return (
@@ -109,10 +117,10 @@ export default function BillsSection() {
                 />
               </div>
 
-              {/* Body: Label, Big Value, Description (ensuring ample spacing and no text clipping) */}
+              {/* Body: Label, Big Value, Description */}
               <div className="mt-4 flex flex-col">
                 <span className="text-[12px] font-bold text-muted">{card.label}</span>
-                <div className="mt-1 text-[26px] font-black tracking-tight text-[#141031] leading-none">
+                <div className="mt-1 text-[24px] sm:text-[26px] font-black tracking-tight text-[#141031] leading-none">
                   {card.value}
                 </div>
                 <p className="mt-2 text-[11px] font-semibold text-muted/80 leading-normal">

@@ -6,23 +6,33 @@ import SpeedometerCard from "./SpeedometerCard";
 import InvoiceBarChart from "./InvoiceBarChart";
 import MiniProgressCircle from "./MiniProgressCircle";
 
-export default function InvoicesSection() {
+export interface InvoicesSectionProps {
+  healthPercentage?: number;
+  inventoryValuation?: string;
+  inventoryCostBasis?: string;
+  paidAmount?: string;
+  liveJobsValue?: string;
+}
+
+export default function InvoicesSection({
+  healthPercentage = 45,
+  inventoryValuation = "$933,879.45",
+  inventoryCostBasis = "$126,783.89",
+  paidAmount = "$9,034,.49",
+  liveJobsValue = "$23,7,8.32",
+}: InvoicesSectionProps) {
   return (
     <div>
-      <h2 className="mb-4 text-xl font-black tracking-tight text-[#141031]">Invoices</h2>
+      <h2 className="mb-4 text-xl font-black tracking-tight text-[#141031]">Invoices & Capital</h2>
 
-      {/* 4-column balanced grid: 
-          Col 1 (1 col): Amount Owed purple card (perfect portrait aspect ratio)
-          Col 2 (1 col): Two stacked statistic cards ("Paid Invoices" + "Live Jobs Value")
-          Col 3-4 (2 cols): Invoice Analytics Bar Chart
-      */}
+      {/* 4-column balanced grid */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-4 items-stretch">
-        {/* Left: Amount Owed Card (1 col) */}
+        {/* Left: Amount Owed / Inventory Valuation Card (1 col) */}
         <div className="lg:col-span-1 flex flex-col">
           <SpeedometerCard
-            percentage={45}
-            amountOwed="$933,879.45"
-            secondaryAmount="$126,783.89"
+            percentage={healthPercentage}
+            amountOwed={inventoryValuation}
+            secondaryAmount={inventoryCostBasis}
           />
         </div>
 
@@ -40,7 +50,7 @@ export default function InvoicesSection() {
             <div className="mt-4 flex flex-col">
               <span className="text-[12px] font-bold text-muted">Paid Invoices</span>
               <div className="mt-1 text-[26px] font-black tracking-tight text-[#141031] leading-none">
-                $9,034,.49
+                {paidAmount}
               </div>
               <p className="mt-2 text-[11px] font-semibold text-muted/80 leading-normal">
                 Current Financial Year
@@ -48,7 +58,7 @@ export default function InvoicesSection() {
             </div>
           </div>
 
-          {/* Card 2: Live Jobs Value (Progress circle correctly on top-right) */}
+          {/* Card 2: Live Jobs Value */}
           <div className="flex-1 min-h-[170px] flex flex-col justify-between rounded-[28px] border border-[#e8ebf7] bg-gradient-to-br from-white to-[#fafbff] p-6 shadow-[0_12px_32px_rgba(95,45,235,0.06)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(95,45,235,0.1)]">
             <div className="flex items-center justify-between">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#edeef6] bg-[#f4f6fe] text-[#141031]">
@@ -60,7 +70,7 @@ export default function InvoicesSection() {
             <div className="mt-4 flex flex-col">
               <span className="text-[12px] font-bold text-muted">Live Jobs Value</span>
               <div className="mt-1 text-[26px] font-black tracking-tight text-[#141031] leading-none">
-                $23,7,8.32
+                {liveJobsValue}
               </div>
               <p className="mt-2 text-[11px] font-semibold text-muted/80 leading-normal">
                 Current Financial Year

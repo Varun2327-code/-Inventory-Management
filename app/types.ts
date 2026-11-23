@@ -63,7 +63,7 @@ export interface Movement {
   itemId?: number;
   itemName: string;
   sku?: string;
-  type: "sale" | "purchase" | "adjustment" | "created" | "deleted";
+  type: "sale" | "purchase" | "adjustment" | "created" | "deleted" | "transfer";
   qtyDelta: number;
   reason: string;
   date: string;
@@ -79,4 +79,4 @@ export interface WorkspaceSettings {
   lowStockAlertsEnabled: boolean;
 }
 
-export type Tab = "Overview" | "Stock" | "Sales" | "Purchases" | "Movements" | "Reports";
+export type Tab = "Overview" | "Stock" | "Sales" | "Purchases" | "Movements" | "Reports" | "Godowns";
