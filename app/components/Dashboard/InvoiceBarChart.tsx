@@ -12,22 +12,22 @@ interface MonthlyBarData {
 }
 
 const MONTH_DATA: MonthlyBarData[] = [
-  { month: "Feb", year: "2021", amount: 2840, heightPct: 46, shade: "#c4b5fd" },
-  { month: "Mar", year: "2021", amount: 4820, heightPct: 78, shade: "#6835f1" },
-  { month: "Apr", year: "2021", amount: 3350, heightPct: 54, shade: "#a78bfa" },
-  { month: "May", year: "2021", amount: 4120, heightPct: 68, shade: "#7c3aed" },
-  { month: "Jun", year: "2021", amount: 3740, heightPct: 62, shade: "#8b5cf6" },
-  { month: "Jul", year: "2021", amount: 4950, heightPct: 82, shade: "#6366f1" },
-  { month: "Aug", year: "2021", amount: 4400, heightPct: 72, shade: "#703bf7" },
-  { month: "Sep", year: "2021", amount: 5600, heightPct: 92, shade: "#581c87" },
+  { month: "Feb", year: "2021", amount: 2840, heightPct: 48, shade: "#c8bdfc" },
+  { month: "Mar", year: "2021", amount: 4820, heightPct: 82, shade: "#6835f1" },
+  { month: "Apr", year: "2021", amount: 3350, heightPct: 56, shade: "#a78bfa" },
+  { month: "May", year: "2021", amount: 4120, heightPct: 70, shade: "#7c3aed" },
+  { month: "Jun", year: "2021", amount: 3740, heightPct: 64, shade: "#8b5cf6" },
+  { month: "Jul", year: "2021", amount: 4950, heightPct: 86, shade: "#6366f1" },
+  { month: "Aug", year: "2021", amount: 4400, heightPct: 74, shade: "#703bf7" },
+  { month: "Sep", year: "2021", amount: 5600, heightPct: 96, shade: "#581c87" },
 ];
 
 export default function InvoiceBarChart() {
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(1); // Default highlight on March 2021 as specified
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(1); // Default highlight on March 2021 as in reference
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="relative flex h-full flex-col justify-between rounded-[32px] border border-[#e8ebf7] bg-[#ffffff] p-6 shadow-[0_12px_35px_rgba(95,45,235,0.06)] transition duration-200 hover:shadow-[0_16px_40px_rgba(95,45,235,0.09)]">
+    <div className="relative flex h-full flex-col justify-between rounded-[28px] border border-[#e8ebf7] bg-white p-6 shadow-[0_12px_32px_rgba(95,45,235,0.06)] transition duration-200 hover:shadow-[0_16px_40px_rgba(95,45,235,0.09)]">
       {/* Header Row */}
       <div className="flex items-center justify-between border-b border-[#f0f2fa] pb-4">
         <div>
@@ -70,11 +70,10 @@ export default function InvoiceBarChart() {
         </div>
       </div>
 
-      {/* Vertical Bar Chart */}
-      <div className="relative my-6 flex h-[200px] items-end justify-between gap-2 sm:gap-3 px-2">
+      {/* Vertical Bar Chart with Active Tooltip */}
+      <div className="relative my-4 flex h-[195px] items-end justify-between gap-2 sm:gap-3 px-2 pt-8">
         {MONTH_DATA.map((item, idx) => {
           const isHovered = hoveredIdx === idx;
-          const isMar = idx === 1;
 
           return (
             <div
@@ -82,9 +81,9 @@ export default function InvoiceBarChart() {
               onMouseEnter={() => setHoveredIdx(idx)}
               className="group relative flex flex-1 flex-col items-center justify-end h-full cursor-pointer"
             >
-              {/* Tooltip: March 2021 or active hovered bar */}
+              {/* Tooltip: e.g. "Mar 2021 · $4,820" */}
               {isHovered && (
-                <div className="absolute -top-11 z-20 whitespace-nowrap rounded-xl bg-[#1d173c] px-2.5 py-1 text-[10px] font-black text-white shadow-xl animate-in fade-in duration-150">
+                <div className="absolute -top-6 z-20 whitespace-nowrap rounded-xl bg-[#1d173c] px-2.5 py-1 text-[10px] font-black text-white shadow-xl animate-in fade-in duration-150">
                   <span>
                     {item.month} {item.year}
                   </span>
@@ -95,8 +94,8 @@ export default function InvoiceBarChart() {
 
               {/* Bar element */}
               <div
-                className={`w-full max-w-[34px] rounded-t-xl transition-all duration-300 ${
-                  isHovered ? "scale-y-[1.03] shadow-md shadow-purple-500/20" : ""
+                className={`w-full max-w-[36px] rounded-t-2xl rounded-b-md transition-all duration-300 ${
+                  isHovered ? "scale-y-[1.02] shadow-md shadow-purple-500/25" : ""
                 }`}
                 style={{
                   height: `${item.heightPct}%`,

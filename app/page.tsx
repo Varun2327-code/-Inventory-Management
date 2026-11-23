@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Check } from "lucide-react";
-import { Item, Movement, Purchase, Sale, Tab, WorkspaceSettings } from "./types";
+import { Item, Movement, Purchase, Sale, WorkspaceSettings } from "./types";
 import { defaultSettings, initialItems, initialMovements, initialPurchases, initialSales } from "./sample-data";
 import { loadInitialData, persistAllData, resetAllStorage } from "./lib/storage";
 
@@ -18,7 +18,6 @@ import StockTab from "./components/Tabs/StockTab";
 import SalesTab from "./components/Tabs/SalesTab";
 import PurchasesTab from "./components/Tabs/PurchasesTab";
 import MovementsTab from "./components/Tabs/MovementsTab";
-import ReportsTab from "./components/Tabs/ReportsTab";
 
 // Modals
 import ItemModal from "./components/Modals/ItemModal";
@@ -110,10 +109,6 @@ export default function Home() {
   // CRUD Handlers
   const handleSaveItem = (itemData: Item) => {
     const exists = items.some((i) => i.id === itemData.id);
-    const nowStr =
-      new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
-      " " +
-      new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 
     if (exists) {
       setItems((prev) => prev.map((it) => (it.id === itemData.id ? itemData : it)));
@@ -234,9 +229,9 @@ export default function Home() {
       {/* A. Fixed Left Sidebar */}
       <Sidebar activeItem={activeNav} onSelect={handleNavSelect} />
 
-      {/* Main Layout Area */}
+      {/* Main Layout Area with generous bottom padding so History section is fully visible */}
       <div className="flex-1 min-h-screen pl-[88px] flex flex-col">
-        <main className="mx-auto w-full max-w-[1440px] px-5 sm:px-9 py-6 sm:py-8 space-y-7">
+        <main className="mx-auto w-full max-w-[1440px] px-5 sm:px-9 py-6 sm:py-8 space-y-7 pb-24">
           {/* B. Top Header */}
           <Header onSearch={(q) => console.log("Searching:", q)} />
 
@@ -246,7 +241,7 @@ export default function Home() {
               {/* C. Bills Section */}
               <BillsSection />
 
-              {/* D. Invoices Section (3-Column layout) */}
+              {/* D. Invoices Section (Aligned 4-column layout) */}
               <InvoicesSection />
 
               {/* E. History Section */}

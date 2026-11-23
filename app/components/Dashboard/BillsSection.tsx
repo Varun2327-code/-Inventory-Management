@@ -78,18 +78,18 @@ export default function BillsSection() {
     <div>
       <h2 className="mb-4 text-xl font-black tracking-tight text-[#141031]">Bills</h2>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {BILLS_CARDS.map((card) => {
           const Icon = card.icon;
 
           return (
             <div
               key={card.id}
-              className="relative flex flex-col justify-between overflow-hidden rounded-[26px] border border-[#e8ebf7] bg-gradient-to-br from-white via-white to-[#fafbff] p-5.5 shadow-[0_12px_32px_rgba(95,45,235,0.06)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(95,45,235,0.1)]"
+              className="relative flex min-h-[175px] flex-col justify-between rounded-[28px] border border-[#e8ebf7] bg-gradient-to-br from-white via-white to-[#fafbff] p-6 shadow-[0_12px_32px_rgba(95,45,235,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(95,45,235,0.1)]"
             >
-              {/* Subtle curved colored accent on right edge */}
+              {/* Subtle decorative curved accent pill on right border */}
               <div
-                className="pointer-events-none absolute -right-2 top-1/2 h-16 w-3 -translate-y-1/2 rounded-l-full opacity-30"
+                className="pointer-events-none absolute right-0 top-1/2 h-12 w-1.5 -translate-y-1/2 rounded-l-full opacity-50"
                 style={{ backgroundColor: card.accentColor }}
               />
 
@@ -109,13 +109,13 @@ export default function BillsSection() {
                 />
               </div>
 
-              {/* Body: Label, Big Value, Description */}
-              <div className="mt-5">
+              {/* Body: Label, Big Value, Description (ensuring ample spacing and no text clipping) */}
+              <div className="mt-4 flex flex-col">
                 <span className="text-[12px] font-bold text-muted">{card.label}</span>
-                <div className="mt-1 text-2xl font-black tracking-tight text-[#141031]">
+                <div className="mt-1 text-[26px] font-black tracking-tight text-[#141031] leading-none">
                   {card.value}
                 </div>
-                <p className="mt-1.5 text-[11px] font-semibold text-muted/80">
+                <p className="mt-2 text-[11px] font-semibold text-muted/80 leading-normal">
                   {card.description}
                 </p>
               </div>
