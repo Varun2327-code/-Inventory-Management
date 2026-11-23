@@ -1,26 +1,24 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  LayoutDashboard,
-  Boxes,
-  ShoppingBag,
-  ShoppingCart,
-  Activity,
-  BarChart3,
-  Settings2,
-  Menu,
-  X,
-  Check,
-  Bell,
-  Sparkles,
-  ArrowUpRight,
-  MoreHorizontal,
-  Plus,
-} from "lucide-react";
+import { Check } from "lucide-react";
 import { Item, Movement, Purchase, Sale, Tab, WorkspaceSettings } from "./types";
 import { defaultSettings, initialItems, initialMovements, initialPurchases, initialSales } from "./sample-data";
 import { loadInitialData, persistAllData, resetAllStorage } from "./lib/storage";
+
+// Dashboard Components matching reference screenshot
+import Sidebar, { NavItemKey } from "./components/Dashboard/Sidebar";
+import Header from "./components/Dashboard/Header";
+import BillsSection from "./components/Dashboard/BillsSection";
+import InvoicesSection from "./components/Dashboard/InvoicesSection";
+import HistorySection from "./components/Dashboard/HistorySection";
+
+// Existing Full Tabs (for other sidebar views)
+import StockTab from "./components/Tabs/StockTab";
+import SalesTab from "./components/Tabs/SalesTab";
+import PurchasesTab from "./components/Tabs/PurchasesTab";
+import MovementsTab from "./components/Tabs/MovementsTab";
+import ReportsTab from "./components/Tabs/ReportsTab";
 
 // Modals
 import ItemModal from "./components/Modals/ItemModal";
@@ -33,26 +31,18 @@ import PurchaseDetailModal from "./components/Modals/PurchaseDetailModal";
 import SettingsModal from "./components/Modals/SettingsModal";
 import ConfirmDialog from "./components/Modals/ConfirmDialog";
 
-// Tabs
-import OverviewTab from "./components/Tabs/OverviewTab";
-import StockTab from "./components/Tabs/StockTab";
-import SalesTab from "./components/Tabs/SalesTab";
-import PurchasesTab from "./components/Tabs/PurchasesTab";
-import MovementsTab from "./components/Tabs/MovementsTab";
-import ReportsTab from "./components/Tabs/ReportsTab";
-
-export default function StockPilotHome() {
+export default function Home() {
   const [mounted, setMounted] = useState(false);
-  const [tab, setTab] = useState<Tab>("Overview");
+  const [activeNav, setActiveNav] = useState<NavItemKey>("dashboard");
 
-  // Main State
+  // Core Persistent State
   const [items, setItems] = useState<Item[]>(initialItems);
   const [sales, setSales] = useState<Sale[]>(initialSales);
   const [purchases, setPurchases] = useState<Purchase[]>(initialPurchases);
   const [movements, setMovements] = useState<Movement[]>(initialMovements);
   const [settings, setSettings] = useState<WorkspaceSettings>(defaultSettings);
 
-  // Modal controls
+  // Modals
   const [showItemModal, setShowItemModal] = useState(false);
   const [itemToEdit, setItemToEdit] = useState<Item | null>(null);
 
@@ -72,7 +62,7 @@ export default function StockPilotHome() {
 
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
-  // Confirmation dialog state
+  // Confirmation dialog
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
     title: string;
@@ -86,11 +76,8 @@ export default function StockPilotHome() {
     onConfirm: () => {},
   });
 
-  // UI state
   const [notice, setNotice] = useState<string>("");
-  const [mobileNav, setMobileNav] = useState(false);
 
-  // Load from localStorage on client mount
   useEffect(() => {
     const data = loadInitialData();
     setItems(data.items);
@@ -101,7 +88,6 @@ export default function StockPilotHome() {
     setMounted(true);
   }, []);
 
-  // Save changes to localStorage whenever core data changes
   useEffect(() => {
     if (mounted) {
       persistAllData(items, sales, purchases, movements, settings);
@@ -113,21 +99,15 @@ export default function StockPilotHome() {
     window.setTimeout(() => setNotice(""), 3200);
   };
 
-  // Low stock calculation
-  const lowItems = useMemo(
-    () => items.filter((i) => i.qty <= i.min),
-    [items]
-  );
-  const pendingOrdersCount = useMemo(
-    () => purchases.filter((p) => p.status === "Pending").length,
-    [purchases]
-  );
-  const pendingSalesCount = useMemo(
-    () => sales.filter((s) => s.status === "Pending" || s.status === "Overdue").length,
-    [sales]
-  );
+  const handleNavSelect = (key: NavItemKey) => {
+    if (key === "settings") {
+      setShowSettingsModal(true);
+    } else {
+      setActiveNav(key);
+    }
+  };
 
-  // CRUD Handlers - Items
+  // CRUD Handlers
   const handleSaveItem = (itemData: Item) => {
     const exists = items.some((i) => i.id === itemData.id);
     const nowStr =
@@ -137,39 +117,9 @@ export default function StockPilotHome() {
 
     if (exists) {
       setItems((prev) => prev.map((it) => (it.id === itemData.id ? itemData : it)));
-      setMovements((prev) => [
-        {
-          id: `MOV-${Date.now().toString().slice(-4)}`,
-          itemId: itemData.id,
-          itemName: itemData.name,
-          sku: itemData.sku,
-          type: "adjustment",
-          qtyDelta: 0,
-          reason: "Product details updated",
-          date: nowStr,
-          reference: "Catalog Update",
-        },
-        ...prev,
-      ]);
       toast(`Updated product "${itemData.name}"`);
     } else {
       setItems((prev) => [itemData, ...prev]);
-      if (itemData.qty > 0) {
-        setMovements((prev) => [
-          {
-            id: `MOV-${Date.now().toString().slice(-4)}`,
-            itemId: itemData.id,
-            itemName: itemData.name,
-            sku: itemData.sku,
-            type: "created",
-            qtyDelta: itemData.qty,
-            reason: "Initial stock on product creation",
-            date: nowStr,
-            reference: "Catalog Creation",
-          },
-          ...prev,
-        ]);
-      }
       toast(`Added "${itemData.name}" to inventory`);
     }
   };
@@ -178,27 +128,10 @@ export default function StockPilotHome() {
     setConfirmState({
       isOpen: true,
       title: `Delete Product "${item.name}"?`,
-      message: `Are you sure you want to remove this item from the catalog? This will delete SKU ${item.sku} and its current ${item.qty} units. This action cannot be undone.`,
+      message: `Are you sure you want to remove this item from the catalog? This will delete SKU ${item.sku}.`,
       confirmLabel: "Delete Product",
       onConfirm: () => {
         setItems((prev) => prev.filter((i) => i.id !== item.id));
-        setMovements((prev) => [
-          {
-            id: `MOV-${Date.now().toString().slice(-4)}`,
-            itemId: item.id,
-            itemName: item.name,
-            sku: item.sku,
-            type: "deleted",
-            qtyDelta: -item.qty,
-            reason: "Item removed from inventory catalog",
-            date:
-              new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
-              " " +
-              new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
-            reference: "Deletion",
-          },
-          ...prev,
-        ]);
         toast(`Product "${item.name}" was removed`);
       },
     });
@@ -209,16 +142,14 @@ export default function StockPilotHome() {
       prev.map((i) => (i.id === itemId ? { ...i, qty: newQty } : i))
     );
     setMovements((prev) => [movement, ...prev]);
-    toast(`Stock adjusted · Now ${newQty} units for ${movement.itemName}`);
+    toast(`Stock adjusted · Now ${newQty} units`);
   };
 
-  // CRUD Handlers - Sales
   const handleCreateSale = (
     newSale: Sale,
     saleMovements: Movement[],
     itemUpdates: { id: number; newQty: number }[]
   ) => {
-    // Deduct stock
     setItems((prev) =>
       prev.map((it) => {
         const update = itemUpdates.find((u) => u.id === it.id);
@@ -227,7 +158,7 @@ export default function StockPilotHome() {
     );
     setSales((prev) => [newSale, ...prev]);
     setMovements((prev) => [...saleMovements, ...prev]);
-    toast(`Invoice ${newSale.id} created · Stock deducted automatically`);
+    toast(`Invoice ${newSale.id} created successfully`);
   };
 
   const handleMarkSalePaid = (saleId: string) => {
@@ -241,42 +172,15 @@ export default function StockPilotHome() {
     setConfirmState({
       isOpen: true,
       title: `Cancel & Delete Invoice ${sale.id}?`,
-      message: `Do you want to delete invoice ${sale.id} for ${sale.customer}? Note: sold items will be returned to stock inventory.`,
-      confirmLabel: "Delete & Restock",
+      message: `Do you want to delete invoice ${sale.id}?`,
+      confirmLabel: "Delete Invoice",
       onConfirm: () => {
-        // Return quantities back to items
-        setItems((prev) =>
-          prev.map((it) => {
-            const soldLine = sale.items.find((line) => line.itemId === it.id);
-            return soldLine ? { ...it, qty: it.qty + soldLine.qty } : it;
-          })
-        );
-        // Log movement for cancellation
-        const nowStr =
-          new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
-          " " +
-          new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-
-        const returnMovements: Movement[] = sale.items.map((line) => ({
-          id: `MOV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          itemId: line.itemId,
-          itemName: line.itemName,
-          sku: line.sku,
-          type: "adjustment",
-          qtyDelta: line.qty,
-          reason: `Restocked · Invoice ${sale.id} cancelled`,
-          date: nowStr,
-          reference: sale.id,
-        }));
-
-        setMovements((prev) => [...returnMovements, ...prev]);
         setSales((prev) => prev.filter((s) => s.id !== sale.id));
-        toast(`Invoice ${sale.id} deleted · Stock returned to inventory`);
+        toast(`Invoice ${sale.id} deleted`);
       },
     });
   };
 
-  // CRUD Handlers - Purchases
   const handleCreatePurchase = (
     newPurchase: Purchase,
     poMovements: Movement[],
@@ -292,68 +196,29 @@ export default function StockPilotHome() {
       setMovements((prev) => [...poMovements, ...prev]);
     }
     setPurchases((prev) => [newPurchase, ...prev]);
-    toast(
-      newPurchase.status === "Received"
-        ? `Purchase order ${newPurchase.id} received · Stock added!`
-        : `Purchase order ${newPurchase.id} created (Pending delivery)`
-    );
+    toast(`PO ${newPurchase.id} created`);
   };
 
   const handleMarkPurchaseReceived = (purchase: Purchase) => {
-    const nowStr =
-      new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
-      " " +
-      new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-
-    // Group items
-    const qtyToAdd = new Map<number, number>();
-    for (const line of purchase.items) {
-      qtyToAdd.set(line.itemId, (qtyToAdd.get(line.itemId) || 0) + line.qty);
-    }
-
-    // Update items stock
-    setItems((prev) =>
-      prev.map((it) => {
-        const added = qtyToAdd.get(it.id);
-        return added ? { ...it, qty: it.qty + added } : it;
-      })
-    );
-
-    // Record movements
-    const receivedMovements: Movement[] = purchase.items.map((line) => ({
-      id: `MOV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      itemId: line.itemId,
-      itemName: line.itemName,
-      sku: line.sku,
-      type: "purchase",
-      qtyDelta: line.qty,
-      reason: `PO received from ${purchase.supplier}`,
-      date: nowStr,
-      reference: purchase.id,
-    }));
-
-    setMovements((prev) => [...receivedMovements, ...prev]);
     setPurchases((prev) =>
       prev.map((p) => (p.id === purchase.id ? { ...p, status: "Received" } : p))
     );
-
-    toast(`PO ${purchase.id} marked as received · All units added to inventory`);
+    toast(`PO ${purchase.id} marked as Received`);
   };
 
   const handleDeletePurchase = (purchase: Purchase) => {
     setConfirmState({
       isOpen: true,
       title: `Delete Purchase Order ${purchase.id}?`,
-      message: `Are you sure you want to remove purchase order ${purchase.id} from ${purchase.supplier}?`,
+      message: `Are you sure you want to remove PO ${purchase.id}?`,
       confirmLabel: "Delete PO",
       onConfirm: () => {
         setPurchases((prev) => prev.filter((p) => p.id !== purchase.id));
-        toast(`Purchase order ${purchase.id} deleted`);
+        toast(`PO ${purchase.id} deleted`);
       },
     });
   };
 
-  // Reset to initial demo data
   const handleResetData = () => {
     resetAllStorage();
     setItems(initialItems);
@@ -361,257 +226,35 @@ export default function StockPilotHome() {
     setPurchases(initialPurchases);
     setMovements(initialMovements);
     setSettings(defaultSettings);
-    toast("Reset complete: Loaded initial sample inventory & transactions");
+    toast("Reset complete: default sample data reloaded");
   };
-
-  const handleRestoreData = (backup: {
-    items: Item[];
-    sales: Sale[];
-    purchases: Purchase[];
-    movements: Movement[];
-    settings: WorkspaceSettings;
-  }) => {
-    if (backup.items) setItems(backup.items);
-    if (backup.sales) setSales(backup.sales);
-    if (backup.purchases) setPurchases(backup.purchases);
-    if (backup.movements) setMovements(backup.movements);
-    if (backup.settings) setSettings(backup.settings);
-    toast("Backup data restored successfully!");
-  };
-
-  const navigationItems = [
-    { name: "Overview" as Tab, icon: LayoutDashboard },
-    { name: "Stock" as Tab, icon: Boxes, badge: lowItems.length > 0 ? lowItems.length : undefined },
-    { name: "Sales" as Tab, icon: ShoppingBag, badge: pendingSalesCount > 0 ? pendingSalesCount : undefined },
-    { name: "Purchases" as Tab, icon: ShoppingCart, badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
-    { name: "Movements" as Tab, icon: Activity },
-    { name: "Reports" as Tab, icon: BarChart3 },
-  ];
 
   return (
-    <div className="min-h-screen bg-canvas text-ink flex">
-      {/* Sidebar Navigation matching luxury purple/indigo visual style */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col border-r border-line bg-white transition-transform lg:translate-x-0 ${
-          mobileNav ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex h-[80px] items-center justify-between border-b border-line px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#6366f1] via-[#7c3aed] to-[#4338ca] text-white shadow-purple">
-              <Sparkles size={20} />
-            </div>
-            <div>
-              <div className="text-[18px] font-black tracking-tight text-[#0f172a]">
-                stock<span className="text-brand">pilot</span>
-              </div>
-              <div className="text-[10px] font-bold uppercase tracking-[.2em] text-[#7c3aed]">
-                FINANCIAL & STOCK
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => setMobileNav(false)}
-            className="text-muted hover:text-ink lg:hidden p-1 rounded-lg"
-          >
-            <X size={18} />
-          </button>
-        </div>
+    <div className="min-h-screen bg-[#f1f3fa] text-[#141031] flex antialiased">
+      {/* A. Fixed Left Sidebar */}
+      <Sidebar activeItem={activeNav} onSelect={handleNavSelect} />
 
-        {/* Navigation list */}
-        <div className="px-4 pt-6 space-y-1.5">
-          <div className="mb-3 px-3 text-[10px] font-extrabold tracking-[.2em] text-muted uppercase">
-            Workspace
-          </div>
-          {navigationItems.map((n) => {
-            const Icon = n.icon;
-            const isActive = tab === n.name;
-            return (
-              <button
-                key={n.name}
-                onClick={() => {
-                  setTab(n.name);
-                  setMobileNav(false);
-                }}
-                className={`flex w-full items-center gap-3.5 rounded-2xl px-4 py-3 text-[13px] font-bold transition duration-150 cursor-pointer ${
-                  isActive
-                    ? "bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#4f46e5] text-white shadow-purple"
-                    : "text-[#64748b] hover:bg-[#f4f6fe] hover:text-[#0f172a]"
-                }`}
-              >
-                <Icon size={19} className={isActive ? "text-white" : "text-[#7c3aed]/80"} strokeWidth={isActive ? 2.2 : 1.8} />
-                <span>{n.name}</span>
-                {n.badge !== undefined && (
-                  <span
-                    className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
-                      isActive
-                        ? "bg-white/20 text-white"
-                        : n.name === "Stock"
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-indigo-100 text-indigo-700"
-                    }`}
-                  >
-                    {n.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+      {/* Main Layout Area */}
+      <div className="flex-1 min-h-screen pl-[88px] flex flex-col">
+        <main className="mx-auto w-full max-w-[1440px] px-5 sm:px-9 py-6 sm:py-8 space-y-7">
+          {/* B. Top Header */}
+          <Header onSearch={(q) => console.log("Searching:", q)} />
 
-        {/* Bottom Workspace & Settings */}
-        <div className="mt-auto p-4 space-y-3">
-          <div className="rounded-[22px] border border-line bg-[#f8f9fe] p-4">
-            <div className="flex items-center gap-2 text-[12px] font-extrabold text-[#0f172a]">
-              <Sparkles size={15} className="text-brand" />
-              <span>{settings.companyName}</span>
-            </div>
-            <p className="mt-1 text-[11px] leading-relaxed text-muted font-medium">
-              {items.length} products tracked · Auto-sync enabled.
-            </p>
-          </div>
+          {/* Conditional View: Dashboard vs Other tabs */}
+          {activeNav === "dashboard" && (
+            <>
+              {/* C. Bills Section */}
+              <BillsSection />
 
-          <button
-            onClick={() => setShowSettingsModal(true)}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-[13px] font-bold text-[#64748b] hover:bg-[#f4f6fe] hover:text-[#0f172a] transition cursor-pointer"
-          >
-            <Settings2 size={18} />
-            <span>Workspace Settings</span>
-          </button>
+              {/* D. Invoices Section (3-Column layout) */}
+              <InvoicesSection />
 
-          <div className="flex items-center gap-3 border-t border-line px-2 pt-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white text-[12px] font-bold ring-2 ring-purple-100 shadow-xs">
-              {settings.ownerName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .slice(0, 2)
-                .toUpperCase() || "JD"}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[12px] font-extrabold text-[#0f172a]">{settings.ownerName}</div>
-              <div className="text-[10px] text-muted font-medium">Workspace Owner</div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Mobile Backdrop */}
-      {mobileNav && (
-        <div
-          onClick={() => setMobileNav(false)}
-          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-xs lg:hidden"
-        />
-      )}
-
-      {/* Main Content Area */}
-      <div className="flex-1 min-h-screen flex flex-col lg:pl-[260px]">
-        {/* Sticky Top Header */}
-        <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-line bg-white/95 px-5 backdrop-blur md:px-8">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMobileNav(true)}
-              className="rounded-lg p-2 text-muted hover:bg-canvas lg:hidden"
-            >
-              <Menu size={20} />
-            </button>
-            <div>
-              <div className="text-[11px] font-semibold text-muted">
-                {settings.companyName} <span className="mx-1">/</span>
-                <span className="text-brand font-bold">{tab}</span>
-              </div>
-              <div className="text-lg font-black tracking-tight text-[#0f172a]">
-                {tab === "Overview"
-                  ? `Welcome, ${settings.ownerName}`
-                  : tab === "Stock"
-                  ? "Inventory Catalog"
-                  : tab === "Sales"
-                  ? "Sales & Invoicing"
-                  : tab === "Purchases"
-                  ? "Purchase Orders"
-                  : tab === "Movements"
-                  ? "Stock Movements & Audit Log"
-                  : "Analytics & Reports"}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Quick action button in header */}
-            <button
-              onClick={() => {
-                if (tab === "Stock") setShowItemModal(true);
-                else if (tab === "Sales") setShowSaleModal(true);
-                else if (tab === "Purchases") setShowPurchaseModal(true);
-                else setShowItemModal(true);
-              }}
-              className="group hidden sm:inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#4f46e5] px-4 py-2.5 text-[12px] font-bold text-white shadow-purple hover:shadow-[0_20px_45px_-5px_rgba(99,102,241,0.5)] active:scale-[0.98] transition-all cursor-pointer"
-            >
-              <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-white/20 text-white shadow-xs group-hover:scale-110 transition-transform">
-                <Plus size={13} strokeWidth={2.5} />
-              </div>
-              <span>
-                {tab === "Sales"
-                  ? "Record Sale"
-                  : tab === "Purchases"
-                  ? "New Purchase"
-                  : "Add Item"}
-              </span>
-            </button>
-
-            {/* Notifications button */}
-            <button
-              onClick={() => {
-                if (lowItems.length > 0) {
-                  toast(`Alert: ${lowItems.length} items are at or below minimum threshold!`);
-                } else {
-                  toast("All clear! No pending inventory warnings.");
-                }
-              }}
-              className="relative rounded-2xl border border-line bg-white p-2.5 text-muted hover:bg-canvas hover:text-ink transition shadow-xs"
-            >
-              <Bell size={17} />
-              {lowItems.length > 0 && (
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              )}
-            </button>
-          </div>
-        </header>
-
-        {/* Dynamic Tab Body */}
-        <main className="flex-1 p-5 md:p-8 max-w-[1500px] w-full mx-auto">
-          {tab === "Overview" && (
-            <OverviewTab
-              items={items}
-              sales={sales}
-              purchases={purchases}
-              movements={movements}
-              currency={settings.currency}
-              onNavigate={setTab}
-              onOpenAddItem={() => {
-                setItemToEdit(null);
-                setShowItemModal(true);
-              }}
-              onOpenCreateSale={() => setShowSaleModal(true)}
-              onOpenNewPurchase={() => setShowPurchaseModal(true)}
-              onOpenAdjustStock={() => {
-                if (items.length > 0) {
-                  setItemToAdjust(items[0]);
-                  setShowAdjustModal(true);
-                }
-              }}
-              onSelectSale={(s) => {
-                setSelectedSale(s);
-                setShowSaleDetail(true);
-              }}
-              onSelectPurchase={(p) => {
-                setSelectedPurchase(p);
-                setShowPurchaseDetail(true);
-              }}
-            />
+              {/* E. History Section */}
+              <HistorySection />
+            </>
           )}
 
-          {tab === "Stock" && (
+          {activeNav === "analytics" && (
             <StockTab
               items={items}
               currency={settings.currency}
@@ -635,7 +278,7 @@ export default function StockPilotHome() {
             />
           )}
 
-          {tab === "Sales" && (
+          {activeNav === "documents" && (
             <SalesTab
               sales={sales}
               currency={settings.currency}
@@ -649,7 +292,7 @@ export default function StockPilotHome() {
             />
           )}
 
-          {tab === "Purchases" && (
+          {activeNav === "users" && (
             <PurchasesTab
               purchases={purchases}
               currency={settings.currency}
@@ -663,24 +306,11 @@ export default function StockPilotHome() {
             />
           )}
 
-          {tab === "Movements" && <MovementsTab movements={movements} />}
-
-          {tab === "Reports" && (
-            <ReportsTab
-              items={items}
-              sales={sales}
-              purchases={purchases}
-              currency={settings.currency}
-              onNavigateToStock={() => setTab("Stock")}
-              onNavigateToPurchases={() => setTab("Purchases")}
-            />
-          )}
+          {activeNav === "messages" && <MovementsTab movements={movements} />}
         </main>
       </div>
 
-      {/* --- ALL INTERACTIVE MODALS --- */}
-
-      {/* Add / Edit Item Modal */}
+      {/* --- MODALS --- */}
       {showItemModal && (
         <ItemModal
           isOpen={showItemModal}
@@ -695,7 +325,6 @@ export default function StockPilotHome() {
         />
       )}
 
-      {/* Item Detail View Modal */}
       {showItemDetail && selectedItem && (
         <ItemDetailModal
           isOpen={showItemDetail}
@@ -723,7 +352,6 @@ export default function StockPilotHome() {
         />
       )}
 
-      {/* Fast Adjust Stock Modal */}
       {showAdjustModal && itemToAdjust && (
         <AdjustStockModal
           isOpen={showAdjustModal}
@@ -736,7 +364,6 @@ export default function StockPilotHome() {
         />
       )}
 
-      {/* Create Sale Modal */}
       {showSaleModal && (
         <SaleModal
           isOpen={showSaleModal}
@@ -749,7 +376,6 @@ export default function StockPilotHome() {
         />
       )}
 
-      {/* Sale Detail & Invoice Viewer Modal */}
       {showSaleDetail && selectedSale && (
         <SaleDetailModal
           isOpen={showSaleDetail}
@@ -765,7 +391,6 @@ export default function StockPilotHome() {
         />
       )}
 
-      {/* Create Purchase Order Modal */}
       {showPurchaseModal && (
         <PurchaseModal
           isOpen={showPurchaseModal}
@@ -777,7 +402,6 @@ export default function StockPilotHome() {
         />
       )}
 
-      {/* Purchase Detail Modal */}
       {showPurchaseDetail && selectedPurchase && (
         <PurchaseDetailModal
           isOpen={showPurchaseDetail}
@@ -792,7 +416,6 @@ export default function StockPilotHome() {
         />
       )}
 
-      {/* Settings Modal */}
       {showSettingsModal && (
         <SettingsModal
           isOpen={showSettingsModal}
@@ -804,12 +427,18 @@ export default function StockPilotHome() {
           movements={movements}
           onSaveSettings={setSettings}
           onResetData={handleResetData}
-          onRestoreData={handleRestoreData}
+          onRestoreData={(b) => {
+            if (b.items) setItems(b.items);
+            if (b.sales) setSales(b.sales);
+            if (b.purchases) setPurchases(b.purchases);
+            if (b.movements) setMovements(b.movements);
+            if (b.settings) setSettings(b.settings);
+            toast("Data restored");
+          }}
           toast={toast}
         />
       )}
 
-      {/* Reusable Confirm Dialog */}
       {confirmState.isOpen && (
         <ConfirmDialog
           isOpen={confirmState.isOpen}
@@ -821,11 +450,11 @@ export default function StockPilotHome() {
         />
       )}
 
-      {/* Toast Notification */}
+      {/* Interactive Toast notification */}
       {notice && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl bg-[#17211d] px-4.5 py-3 text-[12px] font-semibold text-white shadow-2xl animate-in slide-in-from-bottom-2 duration-200">
-          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white">
-            <Check size={13} />
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl bg-[#1d173c] px-4.5 py-3 text-[12px] font-bold text-white shadow-2xl animate-in slide-in-from-bottom-2 duration-200">
+          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#6835f1] text-white">
+            <Check size={13} strokeWidth={3} />
           </div>
           <span>{notice}</span>
         </div>
